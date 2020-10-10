@@ -49,40 +49,32 @@ class AutoMessageOn extends Component {
         }
     }
 
-    // async componentDidUpdate() {
-    //     try {
-    //         if (this.state.inAMeeting) {
-    //             const accessToken = await this.props.getAccessToken(config.scopes);
-
-    //             await incomingMessageHandler(accessToken, this.state.meetingTime)
-    //         }
-    //     } catch (err) {
-    //         throw new Error(err)
-    //     }
-    // }
-
     async componentWillUnmount() {
         try {
             const accessToken = await this.props.getAccessToken(config.scopes);
 
             await deleteMessageSubscription(accessToken);
-            
+
             clearInterval(this.interval)
         } catch(err) {
             throw new Error(err)
         }
     }
+    
     render() {
         return (
             <Container className={classes.root} maxWidth="sm">
-            <Typography className={classes.title} color="textSecondary">In a Meeting Auto Response</Typography>
-            <Typography variant="h6" color="textSecondary">This app sends an auto reply to your coworker's chat message or mention when you are in a meeting.</Typography>
-
+            <Typography variant="h4">In a Meeting Auto Response</Typography>
+            <br></br>
+            <Typography color="textSecondary">This app sends an auto reply to your coworker's chat message or mention when you are in a meeting.</Typography>
+            <br></br>
+            <br></br>
             <Typography variant="h5">Your auto reply message is on!</Typography>
-            <Typography variant="h5">Please click the button below if you'd like to turn it off</Typography>
-
+            <br></br>
+            <Typography variant="h6">Please click the button below if you'd like to turn it off</Typography>
+            <br></br>
             <RouterNavLink to="/">
-                <Button variant="outlined" color="secondary"> Turn off Auto Reply </Button>
+                <Button variant="outlined" color="primary"> Turn off Auto Reply </Button>
             </RouterNavLink>
         </Container>
         )

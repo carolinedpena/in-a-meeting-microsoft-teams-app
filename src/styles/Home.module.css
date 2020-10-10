@@ -1,13 +1,15 @@
+a {
+    text-decoration: none;
+}
+
 .root {
     text-align: center;
+    max-width: 1000px;
 }
+
 
 .pos {
     margin-bottom: 12;
-}
-
-.title {
-    font-size: 32;
 }
 
 .buttonCenter {

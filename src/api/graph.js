@@ -1,7 +1,6 @@
 import moment from 'moment';
 import axios from 'axios';
 
-
 const graph = require('@microsoft/microsoft-graph-client');
 
 // helper function to authenticate client
@@ -40,10 +39,6 @@ export async function messageSubscription(accessToken) {
         chatsIds.push(chat['id'])
     }
 
-    // for (let id of chatsIds) {
-    //     await client.api(`/chats/${id}/messages`).version('beta').get()
-    // }
-
     const expire = new Date();
     expire.setHours(expire.getHours() + 1);
     const expireDT = expire.toISOString()
@@ -77,8 +72,6 @@ export async function incomingMessageHandler(accessToken, meetingEnd) {
             const newChatId = resData['data'][0]['resource'].split('/')[0].split("'")[1]
             const newMessageId = resData['data'][0]['resource'].split('/')[1].split("'")[1]
 
-            console.log(newMessageId)
-
             if (newChatId !== chatId) {
                 chatId = newChatId
 
@@ -88,7 +81,6 @@ export async function incomingMessageHandler(accessToken, meetingEnd) {
             }
         }
     })
-
 }
 
 // autoReply function
