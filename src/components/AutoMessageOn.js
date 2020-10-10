@@ -13,9 +13,7 @@ class AutoMessageOn extends Component {
         
         this.state = {
             isLoaded: false,
-            inAMeeting: false,
-            meetingTime: null,
-            messagingOn: true
+            inAMeeting: false
         }
 
     }
