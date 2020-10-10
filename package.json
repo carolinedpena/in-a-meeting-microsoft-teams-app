@@ -13,6 +13,7 @@
     "@types/microsoft-graph": "^1.18.0",
     "@types/react-router-dom": "^5.1.5",
     "@types/reactstrap": "^8.5.1",
+    "axios": "^0.20.0",
     "moment": "^2.27.0",
     "moment-timezone": "^0.5.31",
     "react": "^16.13.1",

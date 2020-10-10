@@ -1,4 +1,6 @@
 import moment from 'moment';
+import axios from 'axios';
+
 
 const graph = require('@microsoft/microsoft-graph-client');
 
@@ -38,25 +40,8 @@ export async function messageSubscription(accessToken) {
         chatsIds.push(chat['id'])
     }
 
-    for (let id of chatsIds) {
-        await client.api(`/chats/${id}/messages`).version('beta').get()
-    }
-
-    // const userTeams = await client
-    //     .api('/me/joinedTeams')
-    //     .get()
-    
-    // const teamId = userTeams.value[0]['id']
-
-    // const userChannels = await client
-    //     .api(`/teams/${teamId}/channels`)
-    //     .get()
-
-    // const userChannelsArr = userChannels.value;
-
-    // const channelIds = []
-    // for (let channel of userChannelsArr) {
-    //     channelIds.push(channel['id'])
+    // for (let id of chatsIds) {
+    //     await client.api(`/chats/${id}/messages`).version('beta').get()
     // }
 
     const expire = new Date();
@@ -66,7 +51,7 @@ export async function messageSubscription(accessToken) {
     for (let id of chatsIds) {
         const subscription = {
             changeType: 'created',
-            notificationUrl: 'https://6fe94a072cfa.ngrok.io/api/subscription-listen',
+            notificationUrl: 'https://55fa687a79cc.ngrok.io/api/subscription-listen',
             resource: `/chats/${id}/messages`,
             expirationDateTime: expireDT,
             includeResourceData: false
@@ -76,37 +61,41 @@ export async function messageSubscription(accessToken) {
     }
 }
 
-// delete message subscription
-export async function deleteMessageSubscription(accessToken) {
-    const client = getAuthenticatedClient(accessToken);
-
-    // get subscriptions
-    const subscriptions = await client.api('/subscriptions').get();
-    console.log(subscriptions.value)
-    const subscriptionsArr = subscriptions.value
-    
-    const subscriptionIds = [];
-    for (let subscription of subscriptionsArr) {
-        subscriptionIds.push(subscription['id'])
-    } 
-
-   for (let id of subscriptionIds) {
-       await client.api(`/subscriptions/${id}`).version('beta').delete();
-   }
-}
+// 
+let chatId = null;
 
 // incoming message handler
-export async function incomingMessageHandler() {
-    const corsProxy = "https://cors-anywhere.herokuapp.com/"
+export async function incomingMessageHandler(accessToken, meetingEnd) {
 
-    await fetch(corsProxy + '/39a5e3863c78.ngrok.io/api/subscription-listen')
+    await axios.get('http://localhost:5000/api/subscription-send')
     .then(res => {
-        if (res.ok) {
-            return res.json()
+        return res.data
+    }).then(resData => {
+        if (resData['data'][0]) {
+            const newChatId = resData['data'][0]['resource'].split('/')[0].split("'")[1]
+            if (newChatId !== chatId) {
+                chatId = newChatId
+
+                replyHandler(accessToken, chatId, meetingEnd);
+            }
         }
-    }).then(resJson => {
-        console.log(resJson)
     })
+
+}
+
+// autoReply function
+export async function replyHandler(accessToken, chatId, meetingEnd) {
+    const client = getAuthenticatedClient(accessToken);
+
+    const bodyString = `Hello. I'm currently in a meeting that ends at ${meetingEnd}. I will respond to your message as soon as I can. Thanks!`;
+
+    const chatMessage = {
+        body: {
+            "content": bodyString
+        }
+    }
+
+    await client.api(`/chats/${chatId}/messages`).version('beta').post(chatMessage);
 }
 
 // verify user in meeting
@@ -145,20 +134,27 @@ export async function verifyUserMeeting(accessToken) {
     
     for (let meeting of todaysMeetings) {
         if (new Date(currentDateTime) > new Date(meeting['start']) && new Date(currentDateTime) < new Date(meeting['end'])) {
-            return {
-                meetingEnd: meeting['end']
-            };
-        } 
+            return meeting['end']
+        } else {
+            return false
+        }
     }
 }
 
-// autoReply function
-export async function replyHandler(accessToken, meetingEnd, body) {
+// delete message subscription
+export async function deleteMessageSubscription(accessToken) {
     const client = getAuthenticatedClient(accessToken);
 
-    console.log(body)
+    // get subscriptions
+    const subscriptions = await client.api('/subscriptions').get();
+    const subscriptionsArr = subscriptions.value
+    
+    const subscriptionIds = [];
+    for (let subscription of subscriptionsArr) {
+        subscriptionIds.push(subscription['id'])
+    } 
 
-    const response = `Hello. I'm currently in a meeting that ends at ${meetingEnd}. I will respond to your message as soon as I can. Thanks!`;
-
-    // await client.api(`/chats/${chatId}/messages`).version('beta').post(response);
+   for (let id of subscriptionIds) {
+       await client.api(`/subscriptions/${id}`).version('beta').delete();
+   }
 }

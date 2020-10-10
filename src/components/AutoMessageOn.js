@@ -14,39 +14,60 @@ class AutoMessageOn extends Component {
         this.state = {
             isLoaded: false,
             inAMeeting: false,
+            meetingTime: null,
             messagingOn: true
         }
+
     }
 
     async componentDidMount() {
         try {
             // get user's access token
             const accessToken = await this.props.getAccessToken(config.scopes);
-
-            const userInMeeting = await verifyUserMeeting(accessToken);
+            
             await messageSubscription(accessToken);
 
-            this.setState({
-                isLoaded: true,
-                inAMeeting: userInMeeting
-            })
+            const userInMeeting = await verifyUserMeeting(accessToken);
+
+            if (userInMeeting) {
+                const meetingEndTime = userInMeeting.split(' ').slice(1,3).join(' ');
+
+                incomingMessageHandler(accessToken, meetingEndTime)
+
+                this.interval = setInterval(() => {
+                    incomingMessageHandler(accessToken, meetingEndTime)
+                }, 1000)
+
+                this.setState({
+                    isLoaded: true,
+                    inAMeeting: true,
+                })   
+            }
 
         } catch(err) {
             this.props.setError('ERROR', JSON.stringify(err));
         }
     }
 
-    async componentDidUpdate() {
-        const body = await incomingMessageHandler()
+    // async componentDidUpdate() {
+    //     try {
+    //         if (this.state.inAMeeting) {
+    //             const accessToken = await this.props.getAccessToken(config.scopes);
 
-        console.log(body)
-    }
+    //             await incomingMessageHandler(accessToken, this.state.meetingTime)
+    //         }
+    //     } catch (err) {
+    //         throw new Error(err)
+    //     }
+    // }
 
     async componentWillUnmount() {
         try {
             const accessToken = await this.props.getAccessToken(config.scopes);
 
             await deleteMessageSubscription(accessToken);
+            
+            clearInterval(this.interval)
         } catch(err) {
             throw new Error(err)
         }
