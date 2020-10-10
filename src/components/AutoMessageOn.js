@@ -20,24 +20,31 @@ class AutoMessageOn extends Component {
 
     }
 
+    // when component is added to DOM (first loads)
     async componentDidMount() {
         try {
             // get user's access token
             const accessToken = await this.props.getAccessToken(config.scopes);
             
+            // subscribe to incoming messages
             await messageSubscription(accessToken);
 
+            // check if user is in a meeting
             const userInMeeting = await verifyUserMeeting(accessToken);
 
             if (userInMeeting) {
+                // grab meeting time
                 const meetingEndTime = userInMeeting.split(' ').slice(1,3).join(' ');
 
+                // inital call to incoming message handler
                 incomingMessageHandler(accessToken, meetingEndTime)
 
+                // pinging server every 1 second to look for new messages
                 this.interval = setInterval(() => {
                     incomingMessageHandler(accessToken, meetingEndTime)
                 }, 1000)
 
+                // updating state
                 this.setState({
                     isLoaded: true,
                     inAMeeting: true,
@@ -49,18 +56,21 @@ class AutoMessageOn extends Component {
         }
     }
 
+    // when component is removed from DOM
     async componentWillUnmount() {
         try {
             const accessToken = await this.props.getAccessToken(config.scopes);
 
+            // delete subscriptions to messages
             await deleteMessageSubscription(accessToken);
 
+            // clear interval and stop pinging sevrver
             clearInterval(this.interval)
         } catch(err) {
             throw new Error(err)
         }
     }
-    
+
     render() {
         return (
             <Container className={classes.root} maxWidth="sm">
