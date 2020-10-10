@@ -1,0 +1,17 @@
+.root {
+    text-align: center;
+}
+
+.pos {
+    margin-bottom: 12;
+}
+
+.title {
+    font-size: 32;
+}
+
+.buttonCenter {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
