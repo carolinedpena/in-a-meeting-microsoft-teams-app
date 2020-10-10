@@ -63,6 +63,7 @@ export async function messageSubscription(accessToken) {
 
 // 
 let chatId = null;
+let messageId = null;
 
 // incoming message handler
 export async function incomingMessageHandler(accessToken, meetingEnd) {
@@ -72,11 +73,18 @@ export async function incomingMessageHandler(accessToken, meetingEnd) {
         return res.data
     }).then(resData => {
         if (resData['data'][0]) {
+
             const newChatId = resData['data'][0]['resource'].split('/')[0].split("'")[1]
+            const newMessageId = resData['data'][0]['resource'].split('/')[1].split("'")[1]
+
+            console.log(newMessageId)
+
             if (newChatId !== chatId) {
                 chatId = newChatId
 
-                replyHandler(accessToken, chatId, meetingEnd);
+                if (newMessageId !== messageId) {
+                    replyHandler(accessToken, chatId, meetingEnd);
+                }
             }
         }
     })
