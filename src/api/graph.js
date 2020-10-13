@@ -21,7 +21,7 @@ export async function getUserDetails(accessToken) {
 
     const user = await client
         .api('/me')
-        .select('displayName, mail, mailboxSettings, userPrincipalName')
+        .select('displayName, userPrincipalName')
         .get()
 
     return user;
